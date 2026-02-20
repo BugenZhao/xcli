@@ -7,12 +7,9 @@ use crate::destination::Destination;
 use crate::workspace::Workspace;
 use crate::{build, cache, destination, scheme, workspace};
 
+/// Shared options for resolving workspace, scheme, configuration, and destination.
 #[derive(Parser)]
-pub struct BuildArgs {
-    /// Ignore cached selections and re-prompt for all options (selections are still saved)
-    #[arg(long)]
-    pub configure: bool,
-
+pub struct ResolveArgs {
     /// Path to .xcworkspace or Package.swift; if omitted, uses cached value or prompts for selection
     #[arg(long)]
     pub workspace: Option<PathBuf>,
@@ -28,6 +25,16 @@ pub struct BuildArgs {
     /// Destination spec: "simulator:<udid>", "device:<udid>", or "macos"; if omitted, uses cached value or prompts for selection
     #[arg(long)]
     pub destination: Option<String>,
+}
+
+#[derive(Parser)]
+pub struct BuildArgs {
+    /// Ignore cached selections and re-prompt for all options (selections are still saved)
+    #[arg(long)]
+    pub configure: bool,
+
+    #[command(flatten)]
+    pub resolve: ResolveArgs,
 
     /// Path to derived data
     #[arg(long)]
@@ -72,16 +79,14 @@ pub struct ResolvedBuild {
     pub dest: Destination,
 }
 
-/// Resolve inputs, build, and return the resolved state.
-pub fn resolve_and_build(args: &BuildArgs) -> Result<ResolvedBuild> {
+/// Resolve inputs (with optional re-prompting) and save to cache.
+pub fn resolve_and_cache(args: &ResolveArgs, configure: bool) -> Result<ResolvedBuild> {
     let cache_root = cache::CachedState::root()?;
     let mut state = cache::CachedState::load(&cache_root);
-    let configure = args.configure;
 
-    // 1. Resolve inputs, falling back to cached values.
-    //    When `--configure`, cached values become default hints (pre-selected in
-    //    prompts) instead of being used as explicit values (which skip prompts).
-    //    The `default` parameter is harmless when `explicit` is set (early return).
+    // When `configure`, cached values become default hints (pre-selected in
+    // prompts) instead of being used as explicit values (which skip prompts).
+    // The `default` parameter is harmless when `explicit` is set (early return).
     let cached_ws_path = state.workspace.as_ref().map(|p| cache_root.join(p));
     let ws_explicit = if configure {
         args.workspace.as_deref()
@@ -120,8 +125,6 @@ pub fn resolve_and_build(args: &BuildArgs) -> Result<ResolvedBuild> {
         destination::resolve_destination(None, None)?
     };
 
-    let dest_raw = dest.xcodebuild_destination_string(args.rosetta_destination);
-
     eprintln!("Workspace:     {}", ws.path.display());
     eprintln!("Scheme:        {scheme_name}");
     eprintln!("Configuration: {config}");
@@ -143,11 +146,26 @@ pub fn resolve_and_build(args: &BuildArgs) -> Result<ResolvedBuild> {
         eprintln!("Warning: failed to save cache: {e}");
     }
 
-    // 2. Build.
+    Ok(ResolvedBuild {
+        ws,
+        scheme_name,
+        config,
+        dest,
+    })
+}
+
+/// Resolve inputs, build, and return the resolved state.
+pub fn resolve_and_build(args: &BuildArgs) -> Result<ResolvedBuild> {
+    let resolved = resolve_and_cache(&args.resolve, args.configure)?;
+
+    let dest_raw = resolved
+        .dest
+        .xcodebuild_destination_string(args.rosetta_destination);
+
     let build_opts = build::BuildOptions {
-        ws: &ws,
-        scheme: &scheme_name,
-        configuration: &config,
+        ws: &resolved.ws,
+        scheme: &resolved.scheme_name,
+        configuration: &resolved.config,
         destination_raw: &dest_raw,
         derived_data: args.derived_data.as_deref(),
         allow_provisioning_updates: args.allow_provisioning_updates,
@@ -158,12 +176,7 @@ pub fn resolve_and_build(args: &BuildArgs) -> Result<ResolvedBuild> {
     };
     build::build(&build_opts)?;
 
-    Ok(ResolvedBuild {
-        ws,
-        scheme_name,
-        config,
-        dest,
-    })
+    Ok(resolved)
 }
 
 pub fn cmd_build(args: BuildArgs) -> Result<()> {

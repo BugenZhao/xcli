@@ -41,6 +41,9 @@ enum Commands {
     /// List available destinations (simulators, devices, macOS)
     Destinations,
 
+    /// Interactively select and cache workspace, scheme, configuration, and destination
+    Configure(cmd::build::ResolveArgs),
+
     /// Build the project without launching
     Build(cmd::build::BuildArgs),
 
@@ -56,6 +59,7 @@ fn main() -> Result<()> {
         Commands::Schemes { workspace } => cmd::cmd_schemes(workspace),
         Commands::Configs { workspace } => cmd::cmd_configs(workspace),
         Commands::Destinations => cmd::cmd_destinations(),
+        Commands::Configure(args) => cmd::cmd_configure(args),
         Commands::Build(args) => cmd::cmd_build(args),
         Commands::Launch(args) => cmd::cmd_launch(args),
     }
