@@ -84,21 +84,21 @@ impl Destination {
 pub fn list_destinations() -> Result<Vec<Destination>> {
     let mut dests = Vec::new();
 
-    // macOS
-    let arch = current_arch();
-    dests.push(Destination::MacOS {
-        arch: arch.to_string(),
-    });
+    // Physical devices
+    if let Ok(devs) = list_devices() {
+        dests.extend(devs);
+    }
 
     // Simulators
     if let Ok(sims) = list_simulators() {
         dests.extend(sims);
     }
 
-    // Physical devices
-    if let Ok(devs) = list_devices() {
-        dests.extend(devs);
-    }
+    // macOS
+    let arch = current_arch();
+    dests.push(Destination::MacOS {
+        arch: arch.to_string(),
+    });
 
     Ok(dests)
 }
