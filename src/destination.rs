@@ -49,14 +49,10 @@ impl std::fmt::Display for Destination {
 
 impl Destination {
     /// Build the `-destination` string for xcodebuild.
-    pub fn xcodebuild_destination_string(&self, rosetta: bool) -> String {
+    pub fn xcodebuild_destination_string(&self) -> String {
         match self {
             Destination::Simulator { udid, .. } => {
-                let mut s = format!("platform=iOS Simulator,id={udid}");
-                if rosetta {
-                    s.push_str(",arch=x86_64");
-                }
-                s
+                format!("platform=iOS Simulator,id={udid}")
             }
             Destination::Device { udid, .. } => {
                 format!("platform=iOS,id={udid}")

@@ -14,7 +14,7 @@ pub struct CleanArgs {
 pub fn cmd_clean(args: CleanArgs) -> Result<()> {
     let resolved = resolve_and_cache(&args.action.resolve, args.action.configure)?;
 
-    let dest_raw = resolved.dest.xcodebuild_destination_string(false);
+    let dest_raw = resolved.dest.xcodebuild_destination_string();
 
     build::clean(
         &resolved.ws,

@@ -55,10 +55,6 @@ pub struct BuildArgs {
     #[arg(long, default_value_t = true)]
     pub allow_provisioning_updates: bool,
 
-    /// Use Rosetta destination for simulator (arch=x86_64)
-    #[arg(long)]
-    pub rosetta_destination: bool,
-
     /// Extra build arguments (repeatable)
     #[arg(long = "build-arg")]
     pub build_args: Vec<String>,
@@ -165,9 +161,7 @@ pub fn resolve_and_cache(args: &ResolveArgs, configure: bool) -> Result<Resolved
 pub fn resolve_and_build(args: &BuildArgs) -> Result<ResolvedBuild> {
     let resolved = resolve_and_cache(&args.action.resolve, args.action.configure)?;
 
-    let dest_raw = resolved
-        .dest
-        .xcodebuild_destination_string(args.rosetta_destination);
+    let dest_raw = resolved.dest.xcodebuild_destination_string();
 
     let build_opts = build::BuildOptions {
         ws: &resolved.ws,
