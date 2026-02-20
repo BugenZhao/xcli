@@ -127,6 +127,7 @@ pub struct BuildOptions<'a> {
     pub destination_raw: &'a str,
     pub derived_data: Option<&'a str>,
     pub allow_provisioning_updates: bool,
+    pub skip_codesigning: bool,
     pub xcbeautify: Option<bool>,
     pub extra_args: &'a [String],
     pub extra_env: &'a [(String, String)],
@@ -157,6 +158,13 @@ pub fn build(opts: &BuildOptions) -> Result<()> {
     }
     if opts.allow_provisioning_updates {
         args.push("-allowProvisioningUpdates".into());
+    }
+    if opts.skip_codesigning {
+        args.extend([
+            "CODE_SIGN_IDENTITY=".into(),
+            "CODE_SIGNING_REQUIRED=NO".into(),
+            "CODE_SIGNING_ALLOWED=NO".into(),
+        ]);
     }
     if opts.ws.ws_type == WorkspaceType::Xcode {
         args.extend(["-workspace".into(), opts.ws.path.display().to_string()]);

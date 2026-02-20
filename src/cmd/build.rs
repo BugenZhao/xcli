@@ -49,6 +49,10 @@ pub struct BuildArgs {
     #[arg(long = "build-arg")]
     pub build_args: Vec<String>,
 
+    /// Skip code signing (sets CODE_SIGN_IDENTITY='', CODE_SIGNING_REQUIRED=NO, CODE_SIGNING_ALLOWED=NO)
+    #[arg(long)]
+    pub skip_codesigning: bool,
+
     /// Extra build environment KEY=VALUE (repeatable)
     #[arg(long = "build-env", value_parser = parse_key_val)]
     pub build_env: Vec<(String, String)>,
@@ -131,6 +135,7 @@ pub fn resolve_and_build(args: &BuildArgs) -> Result<ResolvedBuild> {
         destination_raw: &dest_raw,
         derived_data: args.derived_data.as_deref(),
         allow_provisioning_updates: args.allow_provisioning_updates,
+        skip_codesigning: args.skip_codesigning,
         xcbeautify: args.xcbeautify,
         extra_args: &args.build_args,
         extra_env: &args.build_env,
