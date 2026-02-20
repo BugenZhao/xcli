@@ -1,4 +1,5 @@
 pub mod build;
+pub mod clean;
 mod configs;
 mod configure;
 mod destinations;
@@ -8,6 +9,7 @@ mod schemes;
 mod workspaces;
 
 pub use build::cmd_build;
+pub use clean::cmd_clean;
 pub use configs::cmd_configs;
 pub use configure::cmd_configure;
 pub use destinations::cmd_destinations;

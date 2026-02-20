@@ -175,37 +175,44 @@ pub fn build(opts: &BuildOptions) -> Result<()> {
     }
 
     if opts.xcbeautify.unwrap_or_else(which_xcbeautify) {
-        // Pipe through xcbeautify.
-        run_piped_xcodebuild(&args, opts)?;
+        run_xcodebuild_piped(&args, opts.ws, opts.extra_env)?;
     } else {
-        run_plain_xcodebuild(&args, opts)?;
+        run_xcodebuild_plain(&args, opts.ws, opts.extra_env)?;
     }
 
     Ok(())
 }
 
-fn run_plain_xcodebuild(args: &[String], opts: &BuildOptions) -> Result<()> {
+fn run_xcodebuild_plain(
+    args: &[String],
+    ws: &Workspace,
+    extra_env: &[(String, String)],
+) -> Result<()> {
     let mut cmd = Command::new("xcodebuild");
     cmd.args(args);
-    for (k, v) in opts.extra_env {
+    for (k, v) in extra_env {
         cmd.env(k, v);
     }
-    if opts.ws.ws_type == WorkspaceType::Spm {
-        cmd.current_dir(opts.ws.working_dir());
+    if ws.ws_type == WorkspaceType::Spm {
+        cmd.current_dir(ws.working_dir());
     }
-    crate::util::run_cmd_inherit(&mut cmd).context("xcodebuild build failed")
+    crate::util::run_cmd_inherit(&mut cmd).context("xcodebuild failed")
 }
 
-fn run_piped_xcodebuild(args: &[String], opts: &BuildOptions) -> Result<()> {
+fn run_xcodebuild_piped(
+    args: &[String],
+    ws: &Workspace,
+    extra_env: &[(String, String)],
+) -> Result<()> {
     use std::process::Stdio;
 
     let mut cmd = Command::new("xcodebuild");
     cmd.args(args).stdout(Stdio::piped());
-    for (k, v) in opts.extra_env {
+    for (k, v) in extra_env {
         cmd.env(k, v);
     }
-    if opts.ws.ws_type == WorkspaceType::Spm {
-        cmd.current_dir(opts.ws.working_dir());
+    if ws.ws_type == WorkspaceType::Spm {
+        cmd.current_dir(ws.working_dir());
     }
     crate::util::print_cmd(&cmd);
 
@@ -219,11 +226,11 @@ fn run_piped_xcodebuild(args: &[String], opts: &BuildOptions) -> Result<()> {
         .spawn()
         .context("failed to spawn xcbeautify")?;
 
-    let build_status = child.wait()?;
+    let status = child.wait()?;
     let _ = beautify.wait_with_output();
 
-    if !build_status.success() {
-        bail!("xcodebuild build failed ({})", build_status);
+    if !status.success() {
+        bail!("xcodebuild failed ({status})");
     }
     Ok(())
 }
@@ -233,4 +240,40 @@ fn which_xcbeautify() -> bool {
         .arg("xcbeautify")
         .output()
         .is_ok_and(|o| o.status.success())
+}
+
+// ---------------------------------------------------------------------------
+// Clean
+// ---------------------------------------------------------------------------
+
+/// Run `xcodebuild clean` for the given workspace/scheme/configuration.
+pub fn clean(
+    ws: &Workspace,
+    scheme: &str,
+    configuration: &str,
+    destination_raw: &str,
+    derived_data: Option<&str>,
+    xcbeautify: Option<bool>,
+) -> Result<()> {
+    let mut args: Vec<String> = vec![
+        "clean".into(),
+        "-scheme".into(),
+        scheme.into(),
+        "-configuration".into(),
+        configuration.into(),
+        "-destination".into(),
+        destination_raw.into(),
+    ];
+    if let Some(dd) = derived_data {
+        args.extend(["-derivedDataPath".into(), dd.into()]);
+    }
+    if ws.ws_type == WorkspaceType::Xcode {
+        args.extend(["-workspace".into(), ws.path.display().to_string()]);
+    }
+
+    if xcbeautify.unwrap_or_else(which_xcbeautify) {
+        run_xcodebuild_piped(&args, ws, &[])
+    } else {
+        run_xcodebuild_plain(&args, ws, &[])
+    }
 }

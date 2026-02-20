@@ -54,6 +54,9 @@ enum Commands {
     /// Build the project without launching
     Build(cmd::build::BuildArgs),
 
+    /// Clean build products
+    Clean(cmd::clean::CleanArgs),
+
     /// Build and run (equivalent to SweetPad's Build & Run Launch)
     Launch(cmd::launch::LaunchArgs),
 }
@@ -70,6 +73,7 @@ fn main() -> Result<()> {
         Commands::Configure(args) => cmd::cmd_configure(args),
         Commands::Reset => cmd::cmd_reset(),
         Commands::Build(args) => cmd::cmd_build(args),
+        Commands::Clean(args) => cmd::cmd_clean(args),
         Commands::Launch(args) => cmd::cmd_launch(args),
     }
 }
