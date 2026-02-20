@@ -17,6 +17,9 @@ pub enum Destination {
         udid: String,
         name: String,
         os: String,
+        /// Runtime state (e.g. "Booted"). Skipped in cache serialization.
+        #[serde(skip)]
+        state: Option<String>,
     },
     Device {
         /// Traditional UDID (for xcodebuild -destination).
@@ -34,9 +37,12 @@ pub enum Destination {
 impl std::fmt::Display for Destination {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Destination::Simulator { name, os, .. } => {
-                write!(f, "[Simulator] {name} ({os})")
-            }
+            Destination::Simulator {
+                name, os, state, ..
+            } => match state.as_deref() {
+                Some(s) => write!(f, "[Simulator] {name} ({os}) ({s})"),
+                None => write!(f, "[Simulator] {name} ({os})"),
+            },
             Destination::Device {
                 name, device_type, ..
             } => write!(f, "[Device] {name} ({device_type})"),
@@ -60,6 +66,19 @@ impl Destination {
             Destination::MacOS { arch } => {
                 format!("platform=macOS,arch={arch}")
             }
+        }
+    }
+
+    /// Check if two destinations refer to the same target (by UDID/arch),
+    /// ignoring transient fields like state.
+    pub fn same_target(&self, other: &Destination) -> bool {
+        match (self, other) {
+            (Destination::Simulator { udid: a, .. }, Destination::Simulator { udid: b, .. }) => {
+                a == b
+            }
+            (Destination::Device { udid: a, .. }, Destination::Device { udid: b, .. }) => a == b,
+            (Destination::MacOS { arch: a }, Destination::MacOS { arch: b }) => a == b,
+            _ => false,
         }
     }
 }
@@ -127,14 +146,11 @@ fn list_simulators() -> Result<Vec<Destination>> {
             if !dev.is_available {
                 continue;
             }
-            let name = match &dev.state {
-                Some(s) if s == "Booted" => format!("{} (Booted)", dev.name),
-                _ => dev.name.clone(),
-            };
             results.push(Destination::Simulator {
                 udid: dev.udid.clone(),
-                name,
+                name: dev.name.clone(),
                 os: os.clone(),
+                state: dev.state.clone(),
             });
         }
     }
@@ -247,10 +263,7 @@ pub fn resolve_destination(
 
     let labels: Vec<String> = dests.iter().map(|d| d.to_string()).collect();
     let default_idx = default
-        .and_then(|d| {
-            let d_str = d.to_string();
-            labels.iter().position(|l| l == &d_str)
-        })
+        .and_then(|d| dests.iter().position(|c| c.same_target(d)))
         .unwrap_or(0);
     let sel = dialoguer::Select::new()
         .with_prompt("Select destination")
@@ -273,6 +286,7 @@ fn parse_destination_spec(spec: &str) -> Result<Destination> {
             udid: udid.to_string(),
             name: String::new(),
             os: String::new(),
+            state: None,
         });
     }
     if let Some(udid) = spec.strip_prefix("device:") {
