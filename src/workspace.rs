@@ -28,10 +28,7 @@ impl Workspace {
     pub fn working_dir(&self) -> &Path {
         match self.ws_type {
             WorkspaceType::Spm => self.path.parent().unwrap_or(&self.path),
-            WorkspaceType::Xcode => self
-                .path
-                .parent()
-                .unwrap_or(&self.path),
+            WorkspaceType::Xcode => self.path.parent().unwrap_or(&self.path),
         }
     }
 }
@@ -63,9 +60,7 @@ pub fn detect_workspaces(root: &Path) -> Vec<Workspace> {
             Some(n) => n,
             None => continue,
         };
-        if name == "Package.swift"
-            || (name.ends_with(".xcworkspace") && !path.starts_with("."))
-        {
+        if name == "Package.swift" || (name.ends_with(".xcworkspace") && !path.starts_with(".")) {
             results.push(Workspace::new(path.to_path_buf()));
         }
     }
@@ -85,8 +80,7 @@ pub fn resolve_workspace(explicit: Option<&Path>) -> Result<Workspace> {
         0 => bail!("no .xcworkspace or Package.swift found (searched depth 4)"),
         1 => Ok(candidates.into_iter().next().unwrap()),
         _ => {
-            let labels: Vec<String> =
-                candidates.iter().map(|w| w.to_string()).collect();
+            let labels: Vec<String> = candidates.iter().map(|w| w.to_string()).collect();
             let sel = dialoguer::Select::new()
                 .with_prompt("Multiple workspaces found, select one")
                 .items(&labels)

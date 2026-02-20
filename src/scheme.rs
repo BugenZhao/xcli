@@ -118,13 +118,13 @@ pub fn list_configurations(ws: &Workspace) -> Result<Vec<String>> {
             }
             #[derive(Deserialize)]
             struct ConfigInner {
-                configurations: Vec<String>,
+                configurations: Option<Vec<String>>,
             }
             let list: ListWithConfigs = parse_cli_json(&output)?;
             let configs = list
                 .workspace
                 .or(list.project)
-                .map(|inner| inner.configurations)
+                .and_then(|inner| inner.configurations)
                 .unwrap_or_else(|| vec!["Debug".into(), "Release".into()]);
             Ok(configs)
         }
@@ -153,10 +153,7 @@ pub fn resolve_scheme(ws: &Workspace, explicit: Option<&str>) -> Result<String> 
 
 /// Resolve configuration: use explicit name, or default to Debug when
 /// configs are exactly [Debug, Release].
-pub fn resolve_configuration(
-    ws: &Workspace,
-    explicit: Option<&str>,
-) -> Result<String> {
+pub fn resolve_configuration(ws: &Workspace, explicit: Option<&str>) -> Result<String> {
     if let Some(c) = explicit {
         return Ok(c.to_string());
     }

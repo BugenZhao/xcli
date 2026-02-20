@@ -128,9 +128,7 @@ struct SimDevice {
 }
 
 fn list_simulators() -> Result<Vec<Destination>> {
-    let output = run_cmd(
-        Command::new("xcrun").args(["simctl", "list", "--json", "devices"]),
-    )?;
+    let output = run_cmd(Command::new("xcrun").args(["simctl", "list", "--json", "devices"]))?;
     let simctl: SimctlOutput = parse_cli_json(&output)?;
 
     let mut results = Vec::new();
@@ -207,17 +205,15 @@ fn list_devices() -> Result<Vec<Destination>> {
     let tmp = tempfile::NamedTempFile::new()?;
     let tmp_path = tmp.path().to_path_buf();
 
-    run_cmd(
-        Command::new("xcrun").args([
-            "devicectl",
-            "list",
-            "devices",
-            "--json-output",
-            &tmp_path.to_string_lossy(),
-            "--timeout",
-            "10",
-        ]),
-    )?;
+    run_cmd(Command::new("xcrun").args([
+        "devicectl",
+        "list",
+        "devices",
+        "--json-output",
+        &tmp_path.to_string_lossy(),
+        "--timeout",
+        "10",
+    ]))?;
 
     let json_str = std::fs::read_to_string(&tmp_path)?;
     let output: DeviceCtlOutput = parse_cli_json(&json_str)?;

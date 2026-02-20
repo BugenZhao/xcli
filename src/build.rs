@@ -83,7 +83,11 @@ pub fn get_launch_info(
 ) -> Result<LaunchInfo> {
     let sdk = dest.sdk();
     let dest_str = dest.xcodebuild_destination_string(false);
-    let dest_arg = if sdk.is_some() { None } else { Some(dest_str.as_str()) };
+    let dest_arg = if sdk.is_some() {
+        None
+    } else {
+        Some(dest_str.as_str())
+    };
     let entries = get_build_settings(ws, scheme, configuration, sdk, dest_arg, derived_data)?;
     let entry = entries
         .first()
@@ -102,8 +106,8 @@ pub fn get_launch_info(
     let app_path = PathBuf::from(&target_build_dir).join(&app_name);
 
     // Executable path (for macOS): TARGET_BUILD_DIR / EXECUTABLE_PATH
-    let executable_path = setting(entry, "EXECUTABLE_PATH")
-        .map(|ep| PathBuf::from(&target_build_dir).join(ep));
+    let executable_path =
+        setting(entry, "EXECUTABLE_PATH").map(|ep| PathBuf::from(&target_build_dir).join(ep));
 
     Ok(LaunchInfo {
         app_path,

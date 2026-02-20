@@ -54,5 +54,6 @@ pub fn parse_cli_json<T: serde::de::DeserializeOwned>(output: &str) -> Result<T>
     };
 
     let json_str = &output[start..=end];
-    serde_json::from_str(json_str).context("failed to parse extracted JSON")
+    serde_json::from_str(json_str)
+        .with_context(|| format!("failed to parse extracted JSON:\n{json_str}"))
 }
