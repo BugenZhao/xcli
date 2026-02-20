@@ -408,20 +408,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
-name = "sweetpad"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "dialoguer",
- "serde",
- "serde_json",
- "tempfile",
- "toml",
- "walkdir",
-]
-
-[[package]]
 name = "syn"
 version = "2.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -686,6 +672,20 @@ dependencies = [
  "serde_json",
  "unicode-xid",
  "wasmparser",
+]
+
+[[package]]
+name = "xcli"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "clap",
+ "dialoguer",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "toml",
+ "walkdir",
 ]
 
 [[package]]

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::destination::Destination;
 
-const CACHE_DIR: &str = ".sweetpad";
+const CACHE_DIR: &str = ".xcli";
 const CACHE_FILE: &str = "state.toml";
 
 /// Persisted state from the last `launch` invocation.
@@ -18,7 +18,7 @@ pub struct CachedState {
 }
 
 impl CachedState {
-    /// Load cached state from `.sweetpad/state.toml` relative to `root`.
+    /// Load cached state from `.xcli/state.toml` relative to `root`.
     pub fn load(root: &Path) -> Self {
         let path = root.join(CACHE_DIR).join(CACHE_FILE);
         std::fs::read_to_string(&path)
@@ -27,7 +27,7 @@ impl CachedState {
             .unwrap_or_default()
     }
 
-    /// Save cached state to `.sweetpad/state.toml` relative to `root`.
+    /// Save cached state to `.xcli/state.toml` relative to `root`.
     pub fn save(&self, root: &Path) -> Result<()> {
         let dir = root.join(CACHE_DIR);
         std::fs::create_dir_all(&dir)?;

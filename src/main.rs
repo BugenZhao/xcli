@@ -13,7 +13,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "sweetpad", about = "CLI for building & running Xcode projects")]
+#[command(name = "xcli", about = "CLI for building & running Xcode projects")]
 struct Cli {
     /// Enable verbose output (print executed commands)
     #[arg(long, short, global = true)]
@@ -57,7 +57,7 @@ enum Commands {
     /// Clean build products
     Clean(cmd::clean::CleanArgs),
 
-    /// Build and run (equivalent to SweetPad's Build & Run Launch)
+    /// Build and run the project
     Launch(cmd::launch::LaunchArgs),
 }
 
