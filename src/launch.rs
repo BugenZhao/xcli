@@ -29,6 +29,21 @@ pub fn launch(opts: &LaunchOptions) -> Result<()> {
 // ---------------------------------------------------------------------------
 
 fn launch_macos(opts: &LaunchOptions) -> Result<()> {
+    let is_native_macos = opts
+        .info
+        .platform_name
+        .as_deref()
+        .is_some_and(|p| p == "macosx");
+
+    if is_native_macos {
+        launch_macos_native(opts)
+    } else {
+        launch_macos_ipad(opts)
+    }
+}
+
+/// Launch a native macOS app by running the executable directly.
+fn launch_macos_native(opts: &LaunchOptions) -> Result<()> {
     let exec = opts
         .info
         .executable_path
@@ -51,6 +66,34 @@ fn launch_macos(opts: &LaunchOptions) -> Result<()> {
         cmd.env(k, v);
     }
     crate::util::run_cmd_inherit(&mut cmd).context("macOS app execution failed")
+}
+
+/// iOS apps on Mac ("Designed for iPad") cannot be launched from the terminal.
+///
+/// Launching requires `com.apple.MobileInstallationHelperService`, a private
+/// Xcode service. This is a known limitation shared by Flutter, React Native,
+/// and other CLI tools.
+/// See: https://github.com/sweetpad-dev/sweetpad/issues/145
+fn launch_macos_ipad(opts: &LaunchOptions) -> Result<()> {
+    let app_path = &opts.info.app_path;
+
+    if !app_path.exists() {
+        bail!("app not found: {}", app_path.display());
+    }
+
+    if opts.install_only {
+        eprintln!("Install-only: skipping launch (macOS has no separate install step)");
+        return Ok(());
+    }
+
+    bail!(
+        "launching iOS apps on Mac (\"Designed for iPad\") from the terminal is not supported.\n\
+         The app was built successfully at: {}\n\
+         To run it, either:\n  \
+         - Use Xcode with the \"My Mac (Designed for iPad)\" destination\n  \
+         - Use a simulator destination instead",
+        app_path.display()
+    );
 }
 
 // ---------------------------------------------------------------------------

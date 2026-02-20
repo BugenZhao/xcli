@@ -66,14 +66,6 @@ impl Destination {
             }
         }
     }
-
-    /// SDK name for `-showBuildSettings -sdk`.
-    pub fn sdk(&self) -> Option<&str> {
-        match self {
-            Destination::MacOS { .. } => Some("macosx"),
-            _ => None,
-        }
-    }
 }
 
 // ---------------------------------------------------------------------------

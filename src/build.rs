@@ -23,7 +23,6 @@ pub fn get_build_settings(
     ws: &Workspace,
     scheme: &str,
     configuration: &str,
-    sdk: Option<&str>,
     destination_raw: Option<&str>,
     derived_data: Option<&str>,
 ) -> Result<Vec<BuildSettingsEntry>> {
@@ -35,9 +34,6 @@ pub fn get_build_settings(
         "-configuration",
         configuration,
     ]);
-    if let Some(sdk) = sdk {
-        cmd.args(["-sdk", sdk]);
-    }
     if let Some(dest) = destination_raw {
         cmd.args(["-destination", dest]);
     }
@@ -71,6 +67,8 @@ pub struct LaunchInfo {
     pub app_path: PathBuf,
     pub executable_path: Option<PathBuf>,
     pub bundle_id: String,
+    /// The platform name from build settings (e.g. "macosx", "iphoneos").
+    pub platform_name: Option<String>,
 }
 
 /// Get the launch info from build settings (picks the first entry).
@@ -81,14 +79,14 @@ pub fn get_launch_info(
     dest: &Destination,
     derived_data: Option<&str>,
 ) -> Result<LaunchInfo> {
-    let sdk = dest.sdk();
     let dest_str = dest.xcodebuild_destination_string(false);
-    let dest_arg = if sdk.is_some() {
-        None
-    } else {
-        Some(dest_str.as_str())
-    };
-    let entries = get_build_settings(ws, scheme, configuration, sdk, dest_arg, derived_data)?;
+    let entries = get_build_settings(
+        ws,
+        scheme,
+        configuration,
+        Some(&dest_str),
+        derived_data,
+    )?;
     let entry = entries
         .first()
         .context("no build settings returned by xcodebuild")?;
@@ -109,10 +107,13 @@ pub fn get_launch_info(
     let executable_path =
         setting(entry, "EXECUTABLE_PATH").map(|ep| PathBuf::from(&target_build_dir).join(ep));
 
+    let platform_name = setting(entry, "PLATFORM_NAME");
+
     Ok(LaunchInfo {
         app_path,
         executable_path,
         bundle_id,
+        platform_name,
     })
 }
 
