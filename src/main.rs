@@ -14,7 +14,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(
-    name = "xcli",
+    name = "xcraft",
     version,
     author = "Bugen Zhao",
     about = "CLI for building & running Xcode projects"

@@ -1,4 +1,4 @@
-# xcli
+# xcraft
 
 CLI for building and running Xcode projects from the terminal, aiming to simplify agentic development on Apple platforms. Supports `.xcworkspace`, SPM `Package.swift`, and Tuist `Project.swift`.
 
@@ -17,67 +17,67 @@ CLI for building and running Xcode projects from the terminal, aiming to simplif
 ## Install
 
 ```sh
-cargo install xcli
+cargo install xcraft
 ```
 
 Or from the Git repository:
 
 ```sh
-cargo install --git https://github.com/BugenZhao/xcli
+cargo install --git https://github.com/BugenZhao/xcraft
 ```
 
 ## Usage
 
 ```sh
 # Show available commands
-xcli help
+xcraft help
 
 # Build and run (interactively selects workspace, scheme, destination on first use)
-xcli launch
+xcraft launch
 
 # Build without launching
-xcli build
+xcraft build
 
 # Clean build products
-xcli clean
+xcraft clean
 
 # Other commands...
 
 # Interactively re-select workspace, scheme, configuration, and destination
-xcli configure
+xcraft configure
 
 # List workspaces / schemes / configurations / destinations
-xcli workspaces
-xcli schemes
-xcli configs
-xcli destinations
+xcraft workspaces
+xcraft schemes
+xcraft configs
+xcraft destinations
 
 # Clear cached selections
-xcli reset
+xcraft reset
 ```
 
-All resolve options (workspace, scheme, configuration, destination) are cached in `.xcli/state.toml` so you only need to select them once. Use `xcli configure` to re-select, or `xcli reset` to clear.
+All resolve options (workspace, scheme, configuration, destination) are cached in `.xcraft/state.toml` so you only need to select them once. Use `xcraft configure` to re-select, or `xcraft reset` to clear.
 
 ### Profiles
 
-Use `--profile <name>` to maintain multiple configurations side by side. Each profile stores its selections in a separate file (`.xcli/state.<name>.toml`).
+Use `--profile <name>` to maintain multiple configurations side by side. Each profile stores its selections in a separate file (`.xcraft/state.<name>.toml`).
 
 ```sh
 # Set up a simulator profile
-xcli configure --profile sim --destination "simulator:..."
+xcraft configure --profile sim --destination "simulator:..."
 
 # Set up a device profile
-xcli configure --profile device --destination "device:..."
+xcraft configure --profile device --destination "device:..."
 
 # Build with a specific profile
-xcli launch --profile sim
-xcli launch --profile device
+xcraft launch --profile sim
+xcraft launch --profile device
 
 # Clear a specific profile
-xcli reset --profile sim
+xcraft reset --profile sim
 ```
 
-Without `--profile`, the default `.xcli/state.toml` is used as before.
+Without `--profile`, the default `.xcraft/state.toml` is used as before.
 
 ## Acknowledgments
 

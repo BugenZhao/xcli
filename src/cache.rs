@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::destination::Destination;
 
-const CACHE_DIR: &str = ".xcli";
+const CACHE_DIR: &str = ".xcraft";
 
 fn cache_file(profile: Option<&str>) -> String {
     match profile {
@@ -24,7 +24,7 @@ pub struct CachedState {
 }
 
 impl CachedState {
-    /// Load cached state from `.xcli/state[.profile].toml` relative to `root`.
+    /// Load cached state from `.xcraft/state[.profile].toml` relative to `root`.
     pub fn load(root: &Path, profile: Option<&str>) -> Self {
         let path = root.join(CACHE_DIR).join(cache_file(profile));
         std::fs::read_to_string(&path)
@@ -33,7 +33,7 @@ impl CachedState {
             .unwrap_or_default()
     }
 
-    /// Save cached state to `.xcli/state[.profile].toml` relative to `root`.
+    /// Save cached state to `.xcraft/state[.profile].toml` relative to `root`.
     pub fn save(&self, root: &Path, profile: Option<&str>) -> Result<()> {
         let dir = root.join(CACHE_DIR);
         std::fs::create_dir_all(&dir)?;

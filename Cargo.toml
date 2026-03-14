@@ -1,11 +1,11 @@
 [package]
-name = "xcli"
+name = "xcraft"
 version = "0.0.1"
 edition = "2024"
 description = "CLI for building and running Xcode projects from the terminal"
 authors = ["Bugen Zhao <i@bugenzhao.com>"]
 license = "MIT"
-repository = "https://github.com/BugenZhao/xcli"
+repository = "https://github.com/BugenZhao/xcraft"
 
 [dependencies]
 anyhow = "1"

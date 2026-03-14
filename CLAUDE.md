@@ -1,10 +1,10 @@
-# xcli
+# xcraft
 
 CLI for building and running Xcode projects (`.xcworkspace`, SPM `Package.swift`, and Tuist `Project.swift`) from the terminal.
 
 ## Tech Stack
 
-- Rust (edition 2024), binary name `xcli`
+- Rust (edition 2024), binary name `xcraft`
 - Main dependencies
   - clap (CLI parsing)
   - dialoguer (interactive prompts)
@@ -29,7 +29,7 @@ CLI for building and running Xcode projects (`.xcworkspace`, SPM `Package.swift`
 - `src/destination.rs` — destination listing (simulators via `simctl`, physical devices via `devicectl`, macOS)
 - `src/build.rs` — `xcodebuild build` / `xcodebuild clean` execution + build settings extraction + optional xcbeautify pipe
 - `src/launch.rs` — app launch by destination type (macOS direct exec, simulator simctl install/launch, device devicectl install/launch)
-- `src/cache.rs` — persistent cache (`CachedState`) for last-used workspace/scheme/configuration/destination, stored in `.xcli/state.toml`
+- `src/cache.rs` — persistent cache (`CachedState`) for last-used workspace/scheme/configuration/destination, stored in `.xcraft/state.toml`
 - `src/util.rs` — command execution helpers + fault-tolerant JSON parsing (handles non-JSON prefixes in xcodebuild output)
 - `docs/build-run-launch-flow.md` — detailed flow documentation (Chinese)
 
