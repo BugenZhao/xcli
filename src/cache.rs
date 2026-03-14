@@ -6,7 +6,13 @@ use serde::{Deserialize, Serialize};
 use crate::destination::Destination;
 
 const CACHE_DIR: &str = ".xcli";
-const CACHE_FILE: &str = "state.toml";
+
+fn cache_file(profile: Option<&str>) -> String {
+    match profile {
+        Some(p) => format!("state.{p}.toml"),
+        None => "state.toml".to_string(),
+    }
+}
 
 /// Persisted state from the last `launch` invocation.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -18,21 +24,21 @@ pub struct CachedState {
 }
 
 impl CachedState {
-    /// Load cached state from `.xcli/state.toml` relative to `root`.
-    pub fn load(root: &Path) -> Self {
-        let path = root.join(CACHE_DIR).join(CACHE_FILE);
+    /// Load cached state from `.xcli/state[.profile].toml` relative to `root`.
+    pub fn load(root: &Path, profile: Option<&str>) -> Self {
+        let path = root.join(CACHE_DIR).join(cache_file(profile));
         std::fs::read_to_string(&path)
             .ok()
             .and_then(|s| toml::from_str(&s).ok())
             .unwrap_or_default()
     }
 
-    /// Save cached state to `.xcli/state.toml` relative to `root`.
-    pub fn save(&self, root: &Path) -> Result<()> {
+    /// Save cached state to `.xcli/state[.profile].toml` relative to `root`.
+    pub fn save(&self, root: &Path, profile: Option<&str>) -> Result<()> {
         let dir = root.join(CACHE_DIR);
         std::fs::create_dir_all(&dir)?;
         let content = toml::to_string_pretty(self)?;
-        std::fs::write(dir.join(CACHE_FILE), content)?;
+        std::fs::write(dir.join(cache_file(profile)), content)?;
         Ok(())
     }
 
@@ -43,8 +49,8 @@ impl CachedState {
 
     /// Remove the cache file. Returns `Ok(true)` if the file was removed,
     /// `Ok(false)` if it didn't exist.
-    pub fn reset(root: &Path) -> Result<bool> {
-        let path = root.join(CACHE_DIR).join(CACHE_FILE);
+    pub fn reset(root: &Path, profile: Option<&str>) -> Result<bool> {
+        let path = root.join(CACHE_DIR).join(cache_file(profile));
         match std::fs::remove_file(&path) {
             Ok(()) => Ok(true),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),

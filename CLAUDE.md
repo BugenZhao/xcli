@@ -43,5 +43,7 @@ cargo run -- launch
 ## Development Workflow
 
 After finishing a task:
+
 - Run `cargo fmt` and `cargo clippy` to ensure formatting and lint compliance
+- Optinally test with real projects like `~/Developer/MNGA`.
 - Update `CLAUDE.md` to reflect changes on project structure

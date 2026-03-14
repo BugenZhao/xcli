@@ -68,7 +68,11 @@ enum Commands {
     Configure(cmd::build::ResolveArgs),
 
     /// Clear cached selections
-    Reset,
+    Reset {
+        /// Clear a named profile's cache instead of the default cache
+        #[arg(long)]
+        profile: Option<String>,
+    },
 
     /// Build the project without launching
     Build(cmd::build::BuildArgs),
@@ -90,7 +94,7 @@ fn main() -> Result<()> {
         Commands::Configs { workspace, json } => cmd::cmd_configs(workspace, json),
         Commands::Destinations { json } => cmd::cmd_destinations(json),
         Commands::Configure(args) => cmd::cmd_configure(args),
-        Commands::Reset => cmd::cmd_reset(),
+        Commands::Reset { profile } => cmd::cmd_reset(profile),
         Commands::Build(args) => cmd::cmd_build(args),
         Commands::Clean(args) => cmd::cmd_clean(args),
         Commands::Launch(args) => cmd::cmd_launch(args),

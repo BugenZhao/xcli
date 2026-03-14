@@ -25,6 +25,10 @@ pub struct ResolveArgs {
     /// Destination spec: "simulator:<udid>", "device:<udid>", or "macos"; if omitted, uses cached value or prompts for selection
     #[arg(long)]
     pub destination: Option<String>,
+
+    /// Use a named profile for cached selections (stored separately from the default cache)
+    #[arg(long)]
+    pub profile: Option<String>,
 }
 
 /// Shared options for any xcodebuild action (build, clean, etc.).
@@ -87,7 +91,8 @@ pub struct ResolvedBuild {
 /// Resolve inputs (with optional re-prompting) and save to cache.
 pub fn resolve_and_cache(args: &ResolveArgs, configure: bool) -> Result<ResolvedBuild> {
     let cache_root = cache::CachedState::root()?;
-    let mut state = cache::CachedState::load(&cache_root);
+    let profile = args.profile.as_deref();
+    let mut state = cache::CachedState::load(&cache_root, profile);
 
     // When `configure`, cached values become default hints (pre-selected in
     // prompts) instead of being used as explicit values (which skip prompts).
@@ -135,6 +140,9 @@ pub fn resolve_and_cache(args: &ResolveArgs, configure: bool) -> Result<Resolved
         destination::resolve_destination(None, None)?
     };
 
+    if let Some(p) = profile {
+        eprintln!("Profile:       {p}");
+    }
     eprintln!("Workspace:     {}", ws.path.display());
     eprintln!("Scheme:        {scheme_name}");
     eprintln!("Configuration: {config}");
@@ -152,7 +160,7 @@ pub fn resolve_and_cache(args: &ResolveArgs, configure: bool) -> Result<Resolved
     state.scheme = Some(scheme_name.clone());
     state.configuration = Some(config.clone());
     state.destination = Some(dest.clone());
-    if let Err(e) = state.save(&cache_root) {
+    if let Err(e) = state.save(&cache_root, profile) {
         eprintln!("Warning: failed to save cache: {e}");
     }
 
